@@ -1,0 +1,1303 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OfficeSupply Online</title>
+    <style>
+      /* ===== RESET & BASE ===== */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: #f0f2f5;
+        color: #1a1a2e;
+        min-height: 100vh;
+      }
+
+      /* ===== HEADER (igual à versão controle) ===== */
+      header {
+        background-color: #0056b3;
+        color: white;
+        padding: 10px 0;
+        border-bottom: 5px solid #004085;
+      }
+      .header-inner {
+        width: 90%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0;
+      }
+      header h1 {
+        margin: 0;
+        padding: 0;
+        display: inline-block;
+        vertical-align: middle;
+        cursor: pointer;
+      }
+      header nav {
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 20px;
+      }
+      header nav ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      header nav ul li {
+        display: inline;
+        margin-right: 20px;
+      }
+      header nav ul li a {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      /* ===== TOAST ===== */
+      .toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%) translateY(80px);
+        background: #1a1a2e;
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 50px;
+        font-size: 0.9em;
+        font-weight: 600;
+        z-index: 999;
+        transition: transform 0.3s ease;
+        pointer-events: none;
+        white-space: nowrap;
+      }
+      .toast.show {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* ===== PAGES ===== */
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+      }
+
+      /* ===== LISTING PAGE ===== */
+      .listing-hero {
+        background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+        color: #fff;
+        padding: 40px 24px 36px;
+        text-align: center;
+      }
+      .listing-hero h1 {
+        font-size: 2em;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .listing-hero p {
+        font-size: 1em;
+        opacity: 0.8;
+      }
+
+      .filters-bar {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 24px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .filter-label {
+        font-size: 0.82em;
+        color: #666;
+        font-weight: 600;
+      }
+      .filter-btn {
+        background: #fff;
+        border: 1.5px solid #ddd;
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 0.83em;
+        cursor: pointer;
+        font-weight: 600;
+        transition:
+          border-color 0.2s,
+          background 0.2s,
+          color 0.2s;
+      }
+      .filter-btn.active,
+      .filter-btn:hover {
+        border-color: #0056b3;
+        background: #0056b3;
+        color: #fff;
+      }
+      .sort-select {
+        margin-left: auto;
+        border: 1.5px solid #ddd;
+        border-radius: 8px;
+        padding: 7px 14px;
+        font-size: 0.83em;
+        background: #fff;
+        cursor: pointer;
+        color: #333;
+        font-weight: 600;
+      }
+
+      .products-grid {
+        max-width: 1200px;
+        margin: 24px auto 0;
+        padding: 0 24px 48px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 24px;
+      }
+
+      /* ===== PRODUCT CARD ===== */
+      .product-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+        position: relative;
+      }
+      .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.11);
+      }
+      .card-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: #ffc107;
+        color: #1a1a2e;
+        font-size: 0.7em;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-radius: 20px;
+        z-index: 2;
+        letter-spacing: 0.3px;
+      }
+      .card-badge.sale {
+        background: #e74c3c;
+        color: #fff;
+      }
+      .card-badge.new {
+        background: #27ae60;
+        color: #fff;
+      }
+
+      .card-img-wrap {
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+        background: #f8faff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .card-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.35s ease;
+      }
+      .product-card:hover .card-img-wrap img {
+        transform: scale(1.04);
+      }
+
+      .card-body {
+        padding: 16px 18px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .card-category {
+        font-size: 0.72em;
+        color: #888;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .card-name {
+        font-size: 1em;
+        font-weight: 700;
+        color: #1a1a2e;
+        line-height: 1.35;
+      }
+
+      .card-rating-row {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .stars-display {
+        display: flex;
+        gap: 1px;
+      }
+      .star-svg {
+        width: 14px;
+        height: 14px;
+      }
+      .card-rating-num {
+        font-size: 0.82em;
+        font-weight: 700;
+        color: #1a1a2e;
+      }
+      .card-reviews-count {
+        font-size: 0.78em;
+        color: #888;
+      }
+      .card-sold {
+        font-size: 0.75em;
+        color: #27ae60;
+        font-weight: 700;
+        margin-left: auto;
+      }
+
+      .card-delivery {
+        font-size: 0.78em;
+        color: #555;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .delivery-fast {
+        color: #27ae60;
+        font-weight: 700;
+      }
+
+      .card-price-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        margin-top: 2px;
+      }
+      .card-original-price {
+        font-size: 0.82em;
+        color: #bbb;
+        text-decoration: line-through;
+      }
+      .card-current-price {
+        font-size: 1.45em;
+        font-weight: 800;
+        color: #e67e22;
+      }
+      .card-discount-tag {
+        background: #fef3cd;
+        color: #b45309;
+        font-size: 0.7em;
+        font-weight: 800;
+        padding: 2px 7px;
+        border-radius: 5px;
+      }
+
+      .card-actions {
+        padding: 0 18px 18px;
+        display: flex;
+        gap: 8px;
+      }
+      .btn-details {
+        flex: 1;
+        padding: 9px;
+        border-radius: 8px;
+        border: 2px solid #0056b3;
+        background: #fff;
+        color: #0056b3;
+        font-weight: 700;
+        font-size: 0.85em;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          color 0.2s;
+      }
+      .btn-details:hover {
+        background: #0056b3;
+        color: #fff;
+      }
+      .btn-cart {
+        flex: 2;
+        padding: 9px;
+        border-radius: 8px;
+        border: none;
+        background: #28a745;
+        color: #fff;
+        font-weight: 800;
+        font-size: 0.85em;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.15s;
+      }
+      .btn-cart:hover {
+        background: #218838;
+        transform: translateY(-1px);
+      }
+
+      /* ===== DETAIL PAGE ===== */
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #0056b3;
+        font-size: 0.9em;
+        font-weight: 700;
+        padding: 20px 24px 8px;
+        transition: gap 0.2s;
+      }
+      .back-btn:hover {
+        gap: 10px;
+      }
+
+      .detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px 60px;
+      }
+      .detail-layout {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 36px;
+        display: flex;
+        gap: 48px;
+        flex-wrap: wrap;
+        margin-bottom: 40px;
+      }
+
+      .detail-img-col {
+        flex: 1;
+        min-width: 300px;
+      }
+      .detail-main-img {
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        display: block;
+      }
+      .detail-badge-wrap {
+        position: relative;
+      }
+      .detail-top-badge {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        background: #ffc107;
+        color: #1a1a2e;
+        font-size: 0.78em;
+        font-weight: 800;
+        padding: 5px 12px;
+        border-radius: 20px;
+        z-index: 2;
+      }
+
+      .detail-info-col {
+        flex: 2;
+        min-width: 340px;
+      }
+      .detail-eyebrow {
+        display: inline-block;
+        background: #e8f0fe;
+        color: #0056b3;
+        font-size: 0.72em;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 20px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+      .detail-title {
+        font-size: 2em;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 14px;
+      }
+
+      .detail-rating-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+      .detail-stars {
+        display: flex;
+        gap: 2px;
+      }
+      .detail-star-svg {
+        width: 18px;
+        height: 18px;
+      }
+      .detail-rating-num {
+        font-size: 1em;
+        font-weight: 800;
+      }
+      .detail-reviews-link {
+        color: #0056b3;
+        font-size: 0.88em;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        cursor: pointer;
+      }
+      .detail-sold-badge {
+        background: #e8faf0;
+        color: #27ae60;
+        font-size: 0.8em;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 20px;
+      }
+
+      .detail-price-box {
+        background: #fff9f0;
+        border: 1.5px solid #fed7aa;
+        border-radius: 10px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .detail-off-badge {
+        background: #e67e22;
+        color: #fff;
+        font-size: 0.85em;
+        font-weight: 800;
+        padding: 6px 12px;
+        border-radius: 6px;
+        align-self: center;
+      }
+      .detail-price-block {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .detail-orig-price {
+        font-size: 0.88em;
+        color: #bbb;
+        text-decoration: line-through;
+      }
+      .detail-curr-price {
+        font-size: 2.3em;
+        font-weight: 800;
+        color: #e67e22;
+        line-height: 1;
+      }
+      .detail-installments {
+        font-size: 0.82em;
+        color: #666;
+      }
+
+      .detail-delivery {
+        background: #e8faf0;
+        border: 1px solid #a7f3d0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 0.85em;
+        color: #166534;
+        font-weight: 600;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .detail-stock {
+        background: #fef9ec;
+        border: 1px solid #fbbf24;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 0.85em;
+        color: #92400e;
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .detail-cta {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .btn-add-cart {
+        padding: 16px;
+        border-radius: 9px;
+        border: none;
+        background: #28a745;
+        color: #fff;
+        font-size: 1.1em;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(40, 167, 69, 0.3);
+        transition:
+          background 0.25s,
+          transform 0.15s,
+          box-shadow 0.25s;
+        max-width: 380px;
+      }
+      .btn-add-cart:hover {
+        background: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(40, 167, 69, 0.4);
+      }
+      .btn-buy-now {
+        padding: 14px;
+        border-radius: 9px;
+        border: none;
+        background: #0056b3;
+        color: #fff;
+        font-size: 1em;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.25s;
+        max-width: 380px;
+      }
+      .btn-buy-now:hover {
+        background: #004085;
+      }
+
+      .detail-benefits {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        background: #f8faff;
+        border: 1px solid #dce8f5;
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+      .detail-benefit {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        min-width: 110px;
+        font-size: 0.8em;
+        color: #444;
+        line-height: 1.4;
+      }
+      .detail-benefit-icon {
+        font-size: 1.4em;
+      }
+
+      .detail-features {
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+      }
+      .detail-features h3 {
+        font-size: 1.1em;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+      .detail-features ul {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+      }
+      .detail-features li {
+        font-size: 0.95em;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .detail-features li::before {
+        content: "✔";
+        color: #28a745;
+        font-weight: 700;
+      }
+
+      /* ===== REVIEWS SECTION ===== */
+      .reviews-section {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        padding: 36px;
+      }
+      .reviews-section h2 {
+        font-size: 1.5em;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .reviews-summary {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 28px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid #eee;
+      }
+      .reviews-big-num {
+        font-size: 3.5em;
+        font-weight: 900;
+        color: #1a1a2e;
+        line-height: 1;
+      }
+      .reviews-big-stars {
+        display: flex;
+        gap: 3px;
+        margin: 4px 0;
+      }
+      .reviews-big-star {
+        width: 20px;
+        height: 20px;
+      }
+      .reviews-total {
+        font-size: 0.85em;
+        color: #888;
+      }
+
+      .reviews-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+      }
+      .review-card {
+        background: #f8faff;
+        border: 1px solid #dce8f5;
+        border-radius: 10px;
+        padding: 20px;
+      }
+      .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .review-author {
+        font-weight: 700;
+        font-size: 0.9em;
+      }
+      .review-date {
+        font-size: 0.75em;
+        color: #aaa;
+      }
+      .review-stars {
+        display: flex;
+        gap: 2px;
+        margin-bottom: 10px;
+      }
+      .review-star {
+        width: 14px;
+        height: 14px;
+      }
+      .review-text {
+        font-size: 0.87em;
+        color: #555;
+        line-height: 1.6;
+        font-style: italic;
+      }
+      .review-verified {
+        font-size: 0.72em;
+        color: #27ae60;
+        font-weight: 700;
+        margin-top: 8px;
+      }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 768px) {
+        .header-inner {
+          padding: 12px 16px;
+        }
+        nav {
+          display: none;
+        }
+        .products-grid {
+          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+          gap: 14px;
+          padding: 0 14px 40px;
+        }
+        .card-img-wrap {
+          height: 140px;
+        }
+        .card-body {
+          padding: 12px 14px;
+          gap: 6px;
+        }
+        .card-actions {
+          padding: 0 14px 14px;
+        }
+        .detail-layout {
+          flex-direction: column;
+          padding: 20px;
+          gap: 24px;
+        }
+        .detail-info-col {
+          min-width: unset;
+        }
+        .detail-title {
+          font-size: 1.5em;
+        }
+        .btn-add-cart,
+        .btn-buy-now {
+          max-width: none;
+        }
+        .reviews-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-inner">
+        <h1 onclick="showPage('listing')">OfficeSupply Online</h1>
+        <nav>
+          <ul>
+            <li><a href="#">Início</a></li>
+            <li><a href="#">Produtos</a></li>
+            <li><a href="#">Promoções</a></li>
+            <li><a href="#">Contato</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- ==================== LISTING PAGE ==================== -->
+    <div class="page active" id="page-listing">
+      <div class="listing-hero">
+        <h1>Materiais de Escritório Premium</h1>
+        <p>
+          Qualidade que transforma o seu dia a dia — entrega rápida para todo o
+          Brasil
+        </p>
+      </div>
+
+      <div class="filters-bar">
+        <span class="filter-label">Filtrar:</span>
+        <button class="filter-btn active" onclick="filterCards(this, 'all')">
+          Todos
+        </button>
+        <button class="filter-btn" onclick="filterCards(this, 'kits')">
+          Kits
+        </button>
+        <button class="filter-btn" onclick="filterCards(this, 'tech')">
+          Tecnologia
+        </button>
+        <button class="filter-btn" onclick="filterCards(this, 'org')">
+          Organização
+        </button>
+        <select class="sort-select">
+          <option>Mais Relevantes</option>
+          <option>Menor Preço</option>
+          <option>Maior Avaliação</option>
+          <option>Mais Vendidos</option>
+        </select>
+      </div>
+
+      <div class="products-grid" id="productsGrid">
+        <!-- cards injetados por JS -->
+      </div>
+    </div>
+
+    <!-- ==================== DETAIL PAGE ==================== -->
+    <div class="page" id="page-detail">
+      <button class="back-btn" onclick="showPage('listing')">
+        ← Voltar para Produtos
+      </button>
+      <div class="detail-container">
+        <div class="detail-layout" id="detailLayout">
+          <!-- injetado por JS -->
+        </div>
+
+        <div class="reviews-section" id="detailReviews">
+          <!-- injetado por JS -->
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ===== DATA =====
+      const IMG_KIT = "img001.jpeg";
+      const IMG_MOUSE = "mouse.jpeg";
+
+      const products = [
+        {
+          id: 1,
+          cat: "kits",
+          badge: "⭐ Mais Vendido",
+          badgeType: "",
+          name: "Kit Escritório Premium Clássico",
+          category: "Kits Essenciais",
+          img: IMG_KIT,
+          rating: 4.8,
+          reviews: 127,
+          sold: 340,
+          originalPrice: 352.8,
+          price: 299.9,
+          discount: 15,
+          installments: "10x de R$\u00a029,99",
+          delivery: "Chegará amanhã",
+          deliveryFast: true,
+          description:
+            "Um kit completo com itens essenciais de alta qualidade para o seu dia a dia no escritório. Inclui canetas, cadernos, post-its e organizadores. Ideal para quem busca funcionalidade com elegância.",
+          features: [
+            "Canetas esferográficas de ponta fina",
+            "Caderno capa dura A5",
+            "Bloco de notas adesivas",
+            "Organizador de mesa compacto",
+          ],
+          stock: 8,
+          reviews_list: [
+            {
+              author: "Ana P.",
+              city: "São Paulo",
+              date: "12 mai 2025",
+              rating: 5,
+              text: "Qualidade excepcional! Vale cada centavo. Já comprei dois kits para presentear colegas de trabalho.",
+            },
+            {
+              author: "Carlos M.",
+              city: "Rio de Janeiro",
+              date: "3 abr 2025",
+              rating: 5,
+              text: "Organizador de mesa incrível. Minha mesa nunca esteve tão arrumada. Super recomendo!",
+            },
+            {
+              author: "Fernanda L.",
+              city: "Curitiba",
+              date: "18 mar 2025",
+              rating: 4,
+              text: "Produto chegou super bem embalado e rápido. O caderno capa dura é lindo, uso todos os dias.",
+            },
+            {
+              author: "Ricardo T.",
+              city: "Belo Horizonte",
+              date: "5 fev 2025",
+              rating: 5,
+              text: "Presente perfeito para minha esposa que trabalha em home office. Ela adorou cada item!",
+            },
+          ],
+        },
+        {
+          id: 2,
+          cat: "tech",
+          badge: "NOVO",
+          badgeType: "new",
+          name: "Mouse Ergonômico Vertical Silence",
+          category: "Tecnologia Essencial",
+          img: IMG_MOUSE,
+          rating: 4.6,
+          reviews: 89,
+          sold: 210,
+          originalPrice: 199.9,
+          price: 149.9,
+          discount: 25,
+          installments: "6x de R$\u00a024,98",
+          delivery: "Em até 2 dias úteis",
+          deliveryFast: false,
+          description:
+            "Mouse vertical ergonômico que mantém o punho em posição natural, reduzindo a fadiga e o risco de lesões por esforço repetitivo. Conexão Bluetooth silenciosa ideal para escritório.",
+          features: [
+            "Design vertical ergonômico",
+            "Conexão Bluetooth 5.0",
+            "Botões silenciosos",
+            "DPI ajustável: 800 / 1200 / 1600",
+            "Bateria recarregável USB-C",
+          ],
+          stock: 23,
+          reviews_list: [
+            {
+              author: "Marcos A.",
+              city: "São Paulo",
+              date: "20 mai 2025",
+              rating: 5,
+              text: "Meu pulso agradece muito. Após semanas usando, a dor que sentia sumiu completamente.",
+            },
+            {
+              author: "Juliana R.",
+              city: "Porto Alegre",
+              date: "9 mai 2025",
+              rating: 4,
+              text: "Levei um tempo para me acostumar com o design vertical, mas valeu a pena. Excelente produto.",
+            },
+            {
+              author: "Thiago N.",
+              city: "Fortaleza",
+              date: "28 abr 2025",
+              rating: 5,
+              text: "Silencioso de verdade! Trabalho em escritório aberto e é perfeito para não incomodar ninguém.",
+            },
+          ],
+        },
+        {
+          id: 3,
+          cat: "org",
+          badge: "15% OFF",
+          badgeType: "sale",
+          name: "Agenda Planner Executiva 2025",
+          category: "Organização",
+          img: IMG_KIT,
+          rating: 4.9,
+          reviews: 214,
+          sold: 520,
+          originalPrice: 89.9,
+          price: 76.4,
+          discount: 15,
+          installments: "3x de R$\u00a025,46",
+          delivery: "Chegará amanhã",
+          deliveryFast: true,
+          description:
+            "Agenda executiva com layout semanal e mensal, espaço para metas, hábitos e reflexões. Capa dura com costura reforçada e papel 90g/m² de alta qualidade.",
+          features: [
+            "Layout semanal + mensal",
+            "Páginas de metas trimestrais",
+            "Stickers de produtividade inclusos",
+            "Capa dura flexível",
+            "Papel 90g/m² off-white",
+          ],
+          stock: 15,
+          reviews_list: [
+            {
+              author: "Beatriz C.",
+              city: "Campinas",
+              date: "14 mai 2025",
+              rating: 5,
+              text: "A melhor agenda que já usei. O layout é perfeito para quem quer se organizar de verdade.",
+            },
+            {
+              author: "Eduardo F.",
+              city: "Brasília",
+              date: "1 abr 2025",
+              rating: 5,
+              text: "Papel excelente, não borra com caneta gel. As páginas de metas mudaram minha rotina.",
+            },
+          ],
+        },
+        {
+          id: 4,
+          cat: "kits",
+          badge: "KIT PREMIUM",
+          badgeType: "",
+          name: "Kit Home Office Minimalista",
+          category: "Kits Essenciais",
+          img: IMG_KIT,
+          rating: 4.7,
+          reviews: 56,
+          sold: 98,
+          originalPrice: 420.0,
+          price: 349.9,
+          discount: 17,
+          installments: "12x de R$\u00a029,16",
+          delivery: "Em até 3 dias úteis",
+          deliveryFast: false,
+          description:
+            "Kit completo pensado para o home office moderno. Porta-canetas, suporte para celular, mousepad de couro vegano e luminária LED de mesa. Tudo em paleta neutra e elegante.",
+          features: [
+            "Porta-canetas de couro vegano",
+            "Suporte de celular ajustável",
+            "Mousepad premium 40x30cm",
+            "Luminária LED 3 temperaturas",
+            "Caixa-presente inclusa",
+          ],
+          stock: 5,
+          reviews_list: [
+            {
+              author: "Natália K.",
+              city: "São Paulo",
+              date: "10 mai 2025",
+              rating: 5,
+              text: "Presenteei meu namorado e ele ficou encantado. Qualidade impecável em todos os itens.",
+            },
+            {
+              author: "Gabriel S.",
+              city: "Recife",
+              date: "22 abr 2025",
+              rating: 4,
+              text: "Muito bonito e bem embalado. A luminária é o destaque — luz quente perfeita para trabalhar à noite.",
+            },
+          ],
+        },
+        {
+          id: 5,
+          cat: "tech",
+          badge: "TOP TECH",
+          badgeType: "",
+          name: "Teclado Mecânico Compacto TKL",
+          category: "Tecnologia Essencial",
+          img: IMG_MOUSE,
+          rating: 4.5,
+          reviews: 143,
+          sold: 387,
+          originalPrice: 389.9,
+          price: 319.9,
+          discount: 18,
+          installments: "10x de R$\u00a031,99",
+          delivery: "Em até 2 dias úteis",
+          deliveryFast: false,
+          description:
+            "Teclado mecânico TKL sem teclado numérico, ideal para mesas compactas. Switch brown silencioso, retroiluminação RGB e conectividade USB-C + Bluetooth.",
+          features: [
+            "Switch brown (tátil silencioso)",
+            "Retroiluminação RGB programável",
+            "Bluetooth 5.0 + cabo USB-C",
+            "Layout TKL 87 teclas",
+            "Keycaps PBT duráveis",
+          ],
+          stock: 12,
+          reviews_list: [
+            {
+              author: "Felipe M.",
+              city: "Curitiba",
+              date: "8 mai 2025",
+              rating: 5,
+              text: "Escrever nesse teclado é um prazer. Feedback tátil perfeito e a retroiluminação é linda.",
+            },
+            {
+              author: "Amanda V.",
+              city: "São Paulo",
+              date: "29 abr 2025",
+              rating: 4,
+              text: "Excelente produto. O único ponto é o software de configuração RGB, um pouco confuso.",
+            },
+          ],
+        },
+        {
+          id: 6,
+          cat: "org",
+          badge: "FRETE GRÁTIS",
+          badgeType: "",
+          name: "Fichário A4 com Divisórias Premium",
+          category: "Organização",
+          img: IMG_KIT,
+          rating: 4.3,
+          reviews: 38,
+          sold: 74,
+          originalPrice: null,
+          price: 59.9,
+          discount: 0,
+          installments: "2x de R$\u00a029,95",
+          delivery: "Chegará amanhã",
+          deliveryFast: true,
+          description:
+            "Fichário A4 em couro sintético com 4 argolas, 12 divisórias coloridas indexadas, bolso interno e elástico de fechamento. Perfeito para documentos e projetos.",
+          features: [
+            "Capa em couro sintético",
+            "4 argolas 25mm",
+            "12 divisórias coloridas com índice",
+            "Bolso interno zipado",
+            "Elástico de fechamento",
+          ],
+          stock: 30,
+          reviews_list: [
+            {
+              author: "Carla D.",
+              city: "Rio de Janeiro",
+              date: "5 mai 2025",
+              rating: 4,
+              text: "Muito bem acabado. As divisórias são firmes e o couro sintético não desbota.",
+            },
+          ],
+        },
+      ];
+
+      // ===== STAR SVG =====
+      function starSVG(filled, size = 14) {
+        const c = filled ? "#f59e0b" : "#e0e0e0";
+        return `<svg class="star-svg" width="${size}" height="${size}" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="${c}" stroke="${c}" stroke-width="1"/></svg>`;
+      }
+      function renderStars(rating, size = 14) {
+        let html = "";
+        for (let i = 1; i <= 5; i++)
+          html += starSVG(i <= Math.round(rating), size);
+        return html;
+      }
+
+      // ===== CART COUNT =====
+      let cartQty = 0;
+      function addToCart(name) {
+        cartQty++;
+
+        showToast(`✅ "${name}" adicionado ao carrinho!`);
+      }
+
+      // ===== TOAST =====
+      function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 2500);
+      }
+
+      // ===== PAGES =====
+      function showPage(name) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document.getElementById("page-" + name).classList.add("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      // ===== FILTER =====
+      function filterCards(btn, cat) {
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        document.querySelectorAll(".product-card").forEach((c) => {
+          c.style.display =
+            cat === "all" || c.dataset.cat === cat ? "" : "none";
+        });
+      }
+
+      // ===== RENDER LISTING =====
+      function renderListing() {
+        const grid = document.getElementById("productsGrid");
+        grid.innerHTML = products
+          .map(
+            (p) => `
+    <div class="product-card" data-cat="${p.cat}" onclick="openDetail(${p.id})">
+      ${p.badge ? `<span class="card-badge ${p.badgeType}">${p.badge}</span>` : ""}
+      <div class="card-img-wrap">
+        <img src="${p.img}" alt="${p.name}" loading="lazy">
+      </div>
+      <div class="card-body">
+        <span class="card-category">${p.category}</span>
+        <div class="card-name">${p.name}</div>
+        <div class="card-rating-row">
+          <div class="stars-display">${renderStars(p.rating)}</div>
+          <span class="card-rating-num">${p.rating}</span>
+          <span class="card-reviews-count">(${p.reviews})</span>
+          <span class="card-sold">+${p.sold} vendidos</span>
+        </div>
+        <div class="card-delivery">
+          🚚 <span class="${p.deliveryFast ? "delivery-fast" : ""}">${p.delivery}</span>
+        </div>
+        <div class="card-price-row">
+          ${p.originalPrice ? `<span class="card-original-price">R$\u00a0${p.originalPrice.toFixed(2).replace(".", ",")}</span>` : ""}
+          <span class="card-current-price">R$\u00a0${p.price.toFixed(2).replace(".", ",")}</span>
+          ${p.discount ? `<span class="card-discount-tag">${p.discount}%\u00a0OFF</span>` : ""}
+        </div>
+      </div>
+      <div class="card-actions" onclick="event.stopPropagation()">
+        <button class="btn-details" onclick="openDetail(${p.id})">Ver Detalhes</button>
+        <button class="btn-cart" onclick="addToCart('${p.name.substring(0, 20)}...')">+ Carrinho</button>
+      </div>
+    </div>
+  `,
+          )
+          .join("");
+      }
+
+      // ===== RENDER DETAIL =====
+      function openDetail(id) {
+        const p = products.find((x) => x.id === id);
+        if (!p) return;
+
+        document.getElementById("detailLayout").innerHTML = `
+    <div class="detail-img-col">
+      <div class="detail-badge-wrap">
+        ${p.badge ? `<span class="detail-top-badge">${p.badge}</span>` : ""}
+        <img class="detail-main-img" src="${p.img}" alt="${p.name}">
+      </div>
+    </div>
+    <div class="detail-info-col">
+      <span class="detail-eyebrow">${p.category}</span>
+      <h2 class="detail-title">${p.name}</h2>
+      <div class="detail-rating-row">
+        <div class="detail-stars">${renderStars(p.rating, 18)}</div>
+        <span class="detail-rating-num">${p.rating}</span>
+        <a class="detail-reviews-link" href="#detailReviews">${p.reviews} avaliações</a>
+        <span class="detail-sold-badge">+${p.sold} vendidos</span>
+      </div>
+      <div class="detail-price-box">
+        ${p.discount ? `<span class="detail-off-badge">${p.discount}% OFF</span>` : ""}
+        <div class="detail-price-block">
+          ${p.originalPrice ? `<span class="detail-orig-price">De R$\u00a0${p.originalPrice.toFixed(2).replace(".", ",")}</span>` : ""}
+          <span class="detail-curr-price">R$\u00a0${p.price.toFixed(2).replace(".", ",")}</span>
+          <span class="detail-installments">ou ${p.installments} sem juros</span>
+        </div>
+      </div>
+      <div class="detail-delivery">🚚 ${p.delivery}${p.deliveryFast ? " — <strong>Frete grátis</strong>" : ""}</div>
+      <div class="detail-stock">⚠️ Apenas <strong>${p.stock} unidades</strong> em estoque!</div>
+      <div class="detail-cta">
+        <button class="btn-add-cart" onclick="addToCart('${p.name.substring(0, 20)}...')">🛒 Adicionar ao Carrinho</button>
+        <button class="btn-buy-now" onclick="showToast('Redirecionando para o pagamento...')">Comprar Agora</button>
+      </div>
+      <div class="detail-benefits">
+        <div class="detail-benefit"><span class="detail-benefit-icon">🚚</span><span>Frete grátis<br><small>acima de R$\u00a0199,90</small></span></div>
+        <div class="detail-benefit"><span class="detail-benefit-icon">↩️</span><span>Devolução<br><small>em 30 dias</small></span></div>
+        <div class="detail-benefit"><span class="detail-benefit-icon">🔒</span><span>Compra<br><small>100% segura</small></span></div>
+      </div>
+      <div class="detail-features">
+        <h3>O que está incluído:</h3>
+        <ul>${p.features.map((f) => `<li>${f}</li>`).join("")}</ul>
+      </div>
+    </div>
+  `;
+
+        const avgRating = (
+          p.reviews_list.reduce((s, r) => s + r.rating, 0) /
+          p.reviews_list.length
+        ).toFixed(1);
+        document.getElementById("detailReviews").innerHTML = `
+    <h2>Avaliações dos Clientes</h2>
+    <div class="reviews-summary">
+      <div>
+        <div class="reviews-big-num">${avgRating}</div>
+        <div class="reviews-big-stars">${renderStars(parseFloat(avgRating), 20)}</div>
+        <div class="reviews-total">${p.reviews} avaliações no total</div>
+      </div>
+    </div>
+    <div class="reviews-grid">
+      ${p.reviews_list
+        .map(
+          (r) => `
+        <div class="review-card">
+          <div class="review-header">
+            <span class="review-author">${r.author} — <span style="font-weight:400;color:#888">${r.city}</span></span>
+            <span class="review-date">${r.date}</span>
+          </div>
+          <div class="review-stars">${renderStars(r.rating, 14)}</div>
+          <p class="review-text">"${r.text}"</p>
+          <div class="review-verified">✔ Compra verificada</div>
+        </div>
+      `,
+        )
+        .join("")}
+    </div>
+  `;
+
+        showPage("detail");
+      }
+
+      // ===== INIT =====
+      renderListing();
+    </script>
+  </body>
+</html>
